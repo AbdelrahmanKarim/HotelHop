@@ -29,6 +29,7 @@ import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.navigation.BottomNavBar
 import com.task.hotelhop.presentation.navigation.Screen
 import com.task.hotelhop.presentation.navigation.bottomNavDestinations
+import com.task.hotelhop.presentation.splash.SplashScreen
 import com.task.hotelhop.presentation.util.applyAppLanguage
 import com.task.hotelhop.presentation.util.findActivityOrNull
 import org.koin.androidx.compose.koinViewModel
@@ -90,7 +91,28 @@ private fun HotelHopNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
-        composable(Screen.Splash.route) { }
+        composable(Screen.Splash.route) {
+            SplashScreen(
+                onNavigateToOnboarding = {
+                    navController.navigate(Screen.Onboarding.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = { navController.navigateToHome() }
+            )
+        }
+    }
+}
+
+private fun NavHostController.navigateToHome() {
+    navigate(Screen.Home.route) {
+        popUpTo(0) { inclusive = true }
+        launchSingleTop = true
     }
 }
 
