@@ -34,6 +34,18 @@ android {
         val baseUrl = localProperties.getProperty("lite_base_url", "")
         buildConfigField("String", "API_KEY", "\"$apiKey\"")
         buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
+        val googleWebClientId = localProperties.getProperty("google_web_client_id", "")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+        val paymobSecret = localProperties.getProperty("paymob_secret_key", "")
+        val paymobPublic = localProperties.getProperty("paymob_public_key", "")
+        val paymobBaseUrl = localProperties.getProperty("paymob_base_url", "https://accept.paymob.com")
+        val paymobCurrency = localProperties.getProperty("paymob_currency", "EGP")
+        val paymobIntegrationId = localProperties.getProperty("paymob_integration_id_card", "5399135")
+        buildConfigField("String", "PAYMOB_SECRET_KEY", "\"$paymobSecret\"")
+        buildConfigField("String", "PAYMOB_PUBLIC_KEY", "\"$paymobPublic\"")
+        buildConfigField("String", "PAYMOB_BASE_URL", "\"$paymobBaseUrl\"")
+        buildConfigField("String", "PAYMOB_CURRENCY", "\"$paymobCurrency\"")
+        buildConfigField("int", "PAYMOB_INTEGRATION_ID", paymobIntegrationId)
 
 
 
@@ -60,8 +72,10 @@ dependencies {
     // Core & Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -78,6 +92,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // Koin
     implementation(platform(libs.koin.bom))
@@ -104,10 +119,13 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
-    // Firebase
+    // Firebase & Google Sign-In
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     // Testing
     testImplementation(libs.junit)
