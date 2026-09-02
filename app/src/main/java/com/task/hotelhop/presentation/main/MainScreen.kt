@@ -26,9 +26,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
+import com.task.hotelhop.presentation.login.LoginScreen
 import com.task.hotelhop.presentation.navigation.BottomNavBar
 import com.task.hotelhop.presentation.navigation.Screen
 import com.task.hotelhop.presentation.navigation.bottomNavDestinations
+import com.task.hotelhop.presentation.on_boarding.OnboardingScreen
+import com.task.hotelhop.presentation.register.RegisterScreen
+import com.task.hotelhop.presentation.splash.SplashScreen
 import com.task.hotelhop.presentation.util.applyAppLanguage
 import com.task.hotelhop.presentation.util.findActivityOrNull
 import org.koin.androidx.compose.koinViewModel
@@ -90,7 +94,49 @@ private fun HotelHopNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
-        composable(Screen.Splash.route) { }
+        composable(Screen.Splash.route) {
+            SplashScreen(
+                onNavigateToOnboarding = {
+                    navController.navigate(Screen.Onboarding.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = { navController.navigateToHome() }
+            )
+        }
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onNavigateToHome = { navController.navigateToHome() },
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) }
+            )
+        }
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                onNavigateToHome = { navController.navigateToHome() },
+                onNavigateToLogin = { navController.popBackStack() }
+            )
+        }
+    }
+}
+
+private fun NavHostController.navigateToHome() {
+    navigate(Screen.Home.route) {
+        popUpTo(0) { inclusive = true }
+        launchSingleTop = true
     }
 }
 
