@@ -3,6 +3,7 @@ package com.task.hotelhop.presentation.navigation
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -35,5 +36,6 @@ data class BottomNavDestination(
 
 val bottomNavDestinations = listOf(
     BottomNavDestination(Screen.Home, R.string.nav_home, Icons.Filled.Home),
-    BottomNavDestination(Screen.Search, R.string.nav_search, Icons.Filled.Search)
+    BottomNavDestination(Screen.Search, R.string.nav_search, Icons.Filled.Search),
+    BottomNavDestination(Screen.Favorites, R.string.nav_favorites, Icons.Filled.Favorite)
 )
