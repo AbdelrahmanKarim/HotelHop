@@ -21,13 +21,16 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.favorite.FavoriteScreen
 import com.task.hotelhop.presentation.home.HomeScreen
+import com.task.hotelhop.presentation.hotel_details.HotelDetailsScreen
 import com.task.hotelhop.presentation.login.LoginScreen
 import com.task.hotelhop.presentation.navigation.BottomNavBar
 import com.task.hotelhop.presentation.navigation.Screen
@@ -151,6 +154,17 @@ private fun HotelHopNavGraph(navController: NavHostController) {
             FavoriteScreen(
                 onNavigateToDetails = { hotelId ->
                     navController.navigate(Screen.HotelDetails.createRoute(hotelId))
+                }
+            )
+        }
+        composable(
+            route = Screen.HotelDetails.route,
+            arguments = listOf(navArgument(Screen.HotelDetails.ARG_HOTEL_ID) { type = NavType.StringType })
+        ) {
+            HotelDetailsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCheckout = { hotelId ->
+                    navController.navigate(Screen.Checkout.createRoute(hotelId))
                 }
             )
         }
