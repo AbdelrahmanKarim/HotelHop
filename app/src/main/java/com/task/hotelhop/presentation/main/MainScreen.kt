@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
+import com.task.hotelhop.presentation.favorite.FavoriteScreen
 import com.task.hotelhop.presentation.home.HomeScreen
 import com.task.hotelhop.presentation.login.LoginScreen
 import com.task.hotelhop.presentation.navigation.BottomNavBar
@@ -141,6 +142,13 @@ private fun HotelHopNavGraph(navController: NavHostController) {
         }
         composable(Screen.Search.route) {
             SearchScreen(
+                onNavigateToDetails = { hotelId ->
+                    navController.navigate(Screen.HotelDetails.createRoute(hotelId))
+                }
+            )
+        }
+        composable(Screen.Favorites.route) {
+            FavoriteScreen(
                 onNavigateToDetails = { hotelId ->
                     navController.navigate(Screen.HotelDetails.createRoute(hotelId))
                 }
