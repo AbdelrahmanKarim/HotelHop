@@ -12,7 +12,7 @@ interface UserRepository {
     fun isDarkMode(): Flow<Boolean?>
     fun getLanguage(): Flow<String>
     fun hasSeenOnboarding(): Flow<Boolean>
-    suspend fun toggleTheme(isDark: Boolean)
+    suspend fun toggleTheme(isDark: Boolean?)
     suspend fun changeLanguage(languageCode: String)
     suspend fun completeOnboarding()
 

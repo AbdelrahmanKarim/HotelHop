@@ -17,28 +17,32 @@ class HotelRepositoryImpl(
     private val localDS: LocalHotelDataSource
 ) : HotelRepository {
 
-    override suspend fun refreshHotels(limit: Int, offset: Int) {
+    override suspend fun refreshHotels(limit: Int, offset: Int): Int {
         val remoteResult = remoteDS.getHotels(limit, offset)
 
-        remoteResult.onSuccess { dtoResponse ->
-            if (offset == 0) localDS.clearNonFavoriteCache()
-            val newEntities = dtoResponse.data.map { it.toEntity() }
-            val currentCache = localDS.getCachedHotels().first()
-            val favoriteIds = currentCache.filter { it.isFavorite }.map { it.id }
+        return remoteResult.fold(
+            onSuccess = { dtoResponse ->
+                if (offset == 0) localDS.clearNonFavoriteCache()
+                val newEntities = dtoResponse.data.map { it.toEntity() }
+                val currentCache = localDS.getCachedHotels().first()
+                val favoriteIds = currentCache.filter { it.isFavorite }.map { it.id }
 
-            val entitiesToSave = newEntities.map { entity ->
-                if (favoriteIds.contains(entity.id)) entity.copy(isFavorite = true) else entity
-            }
+                val entitiesToSave = newEntities.map { entity ->
+                    if (favoriteIds.contains(entity.id)) entity.copy(isFavorite = true) else entity
+                }
 
-            localDS.cacheHotels(entitiesToSave)
-        }.onFailure {
-            val currentCache = localDS.getCachedHotels().first()
-            if (currentCache.isEmpty()) {
-                throw AppException.OfflineAndNoCacheException()
-            } else {
-                throw it
+                localDS.cacheHotels(entitiesToSave)
+                newEntities.size
+            },
+            onFailure = { throwable ->
+                val currentCache = localDS.getCachedHotels().first()
+                if (currentCache.isEmpty()) {
+                    throw AppException.OfflineAndNoCacheException()
+                } else {
+                    throw throwable
+                }
             }
-        }
+        )
     }
 
     override fun getHotels(): Flow<List<Hotel>> {

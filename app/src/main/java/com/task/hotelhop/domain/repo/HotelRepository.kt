@@ -5,7 +5,7 @@ import com.task.hotelhop.domain.entity.Hotel
 import kotlinx.coroutines.flow.Flow
 
 interface HotelRepository {
-    suspend fun refreshHotels(limit: Int, offset: Int)
+    suspend fun refreshHotels(limit: Int, offset: Int): Int
 
     fun getHotels(): Flow<List<Hotel>>
     fun getFavoriteHotels(): Flow<List<Hotel>>

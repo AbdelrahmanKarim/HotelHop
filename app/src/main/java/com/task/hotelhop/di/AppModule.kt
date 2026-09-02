@@ -23,6 +23,7 @@ import com.task.hotelhop.domain.repo.HotelRepository
 import com.task.hotelhop.domain.repo.UserRepository
 import com.task.hotelhop.domain.usecase.hotel.*
 import com.task.hotelhop.domain.usecase.user.*
+import com.task.hotelhop.presentation.main.MainViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -31,6 +32,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val networkModule = module {
@@ -104,6 +106,8 @@ val useCaseModule = module {
     factory { ChangeLanguageUseCase(repository = get()) }
     factory { CompleteOnboardingUseCase(repository = get()) }
     factory { CheckUserLoggedInUseCase(repository = get()) }
+    factory { ObserveOnboardingUseCase(repository = get()) }
+    factory { ObserveLanguageUseCase(repository = get()) }
     // Hotel Use Cases
     factory { GetPagedHotelsUseCase(repository = get()) }
     factory { GetFavoriteHotelsUseCase(repository = get()) }
@@ -112,10 +116,15 @@ val useCaseModule = module {
     factory { ToggleFavoriteUseCase(repository = get()) }
 }
 
+val viewModelModule = module {
+    viewModelOf(::MainViewModel)
+}
+
 val appModule = listOf(
     networkModule,
     localModule,
     dataSourceModule,
     repositoryModule,
-    useCaseModule
+    useCaseModule,
+    viewModelModule
 )

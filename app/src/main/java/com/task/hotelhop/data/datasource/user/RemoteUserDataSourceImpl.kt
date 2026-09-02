@@ -1,10 +1,11 @@
 package com.task.hotelhop.data.datasource.user
 
-import com.example.atmos.data.util.safeCall
+import com.task.hotelhop.data.util.safeCall
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.task.hotelhop.data.mapper.mapFirebaseUserToDomain
 import com.task.hotelhop.domain.entity.User
 import com.task.hotelhop.domain.exception.AppException
@@ -30,7 +31,14 @@ class RemoteUserDataSourceImpl(
         return safeCall {
             try {
                 val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-                mapFirebaseUserToDomain(result.user, fallbackName = displayName)
+                val firebaseUser = result.user ?: throw AppException.UnknownException()
+                firebaseUser.updateProfile(
+                    UserProfileChangeRequest.Builder()
+                        .setDisplayName(displayName)
+                        .build()
+                ).await()
+                firebaseUser.reload().await()
+                mapFirebaseUserToDomain(firebaseAuth.currentUser, fallbackName = displayName)
             } catch (e: FirebaseAuthUserCollisionException) {
                 throw AppException.UserAlreadyExistsException()
             }
