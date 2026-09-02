@@ -31,6 +31,7 @@ import com.task.hotelhop.presentation.navigation.BottomNavBar
 import com.task.hotelhop.presentation.navigation.Screen
 import com.task.hotelhop.presentation.navigation.bottomNavDestinations
 import com.task.hotelhop.presentation.on_boarding.OnboardingScreen
+import com.task.hotelhop.presentation.register.RegisterScreen
 import com.task.hotelhop.presentation.splash.SplashScreen
 import com.task.hotelhop.presentation.util.applyAppLanguage
 import com.task.hotelhop.presentation.util.findActivityOrNull
@@ -121,6 +122,12 @@ private fun HotelHopNavGraph(navController: NavHostController) {
             LoginScreen(
                 onNavigateToHome = { navController.navigateToHome() },
                 onNavigateToRegister = { navController.navigate(Screen.Register.route) }
+            )
+        }
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                onNavigateToHome = { navController.navigateToHome() },
+                onNavigateToLogin = { navController.popBackStack() }
             )
         }
     }

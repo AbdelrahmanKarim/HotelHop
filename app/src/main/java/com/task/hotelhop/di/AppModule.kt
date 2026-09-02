@@ -26,6 +26,7 @@ import com.task.hotelhop.domain.usecase.user.*
 import com.task.hotelhop.presentation.login.LoginViewModel
 import com.task.hotelhop.presentation.main.MainViewModel
 import com.task.hotelhop.presentation.on_boarding.OnboardingViewModel
+import com.task.hotelhop.presentation.register.RegisterViewModel
 import com.task.hotelhop.presentation.splash.SplashViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -124,6 +125,7 @@ val viewModelModule = module {
     viewModelOf(::SplashViewModel)
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::LoginViewModel)
+    viewModelOf(::RegisterViewModel)
 }
 
 val appModule = listOf(
