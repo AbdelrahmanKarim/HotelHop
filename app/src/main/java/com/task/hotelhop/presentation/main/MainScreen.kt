@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
+import com.task.hotelhop.presentation.home.HomeScreen
 import com.task.hotelhop.presentation.login.LoginScreen
 import com.task.hotelhop.presentation.navigation.BottomNavBar
 import com.task.hotelhop.presentation.navigation.Screen
@@ -128,6 +129,13 @@ private fun HotelHopNavGraph(navController: NavHostController) {
             RegisterScreen(
                 onNavigateToHome = { navController.navigateToHome() },
                 onNavigateToLogin = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onNavigateToDetails = { hotelId ->
+                    navController.navigate(Screen.HotelDetails.createRoute(hotelId))
+                }
             )
         }
     }
