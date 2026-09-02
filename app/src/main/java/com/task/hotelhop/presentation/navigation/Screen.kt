@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.task.hotelhop.R
 
@@ -33,5 +34,6 @@ data class BottomNavDestination(
 )
 
 val bottomNavDestinations = listOf(
-    BottomNavDestination(Screen.Home, R.string.nav_home, Icons.Filled.Home)
+    BottomNavDestination(Screen.Home, R.string.nav_home, Icons.Filled.Home),
+    BottomNavDestination(Screen.Search, R.string.nav_search, Icons.Filled.Search)
 )

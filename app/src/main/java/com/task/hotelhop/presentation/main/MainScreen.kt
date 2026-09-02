@@ -33,6 +33,7 @@ import com.task.hotelhop.presentation.navigation.Screen
 import com.task.hotelhop.presentation.navigation.bottomNavDestinations
 import com.task.hotelhop.presentation.on_boarding.OnboardingScreen
 import com.task.hotelhop.presentation.register.RegisterScreen
+import com.task.hotelhop.presentation.search.SearchScreen
 import com.task.hotelhop.presentation.splash.SplashScreen
 import com.task.hotelhop.presentation.util.applyAppLanguage
 import com.task.hotelhop.presentation.util.findActivityOrNull
@@ -133,6 +134,13 @@ private fun HotelHopNavGraph(navController: NavHostController) {
         }
         composable(Screen.Home.route) {
             HomeScreen(
+                onNavigateToDetails = { hotelId ->
+                    navController.navigate(Screen.HotelDetails.createRoute(hotelId))
+                }
+            )
+        }
+        composable(Screen.Search.route) {
+            SearchScreen(
                 onNavigateToDetails = { hotelId ->
                     navController.navigate(Screen.HotelDetails.createRoute(hotelId))
                 }
