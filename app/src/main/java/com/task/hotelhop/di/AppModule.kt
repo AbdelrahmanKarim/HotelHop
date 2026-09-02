@@ -23,6 +23,7 @@ import com.task.hotelhop.domain.repo.HotelRepository
 import com.task.hotelhop.domain.repo.UserRepository
 import com.task.hotelhop.domain.usecase.hotel.*
 import com.task.hotelhop.domain.usecase.user.*
+import com.task.hotelhop.presentation.login.LoginViewModel
 import com.task.hotelhop.presentation.main.MainViewModel
 import com.task.hotelhop.presentation.on_boarding.OnboardingViewModel
 import com.task.hotelhop.presentation.splash.SplashViewModel
@@ -122,6 +123,7 @@ val viewModelModule = module {
     viewModelOf(::MainViewModel)
     viewModelOf(::SplashViewModel)
     viewModelOf(::OnboardingViewModel)
+    viewModelOf(::LoginViewModel)
 }
 
 val appModule = listOf(
