@@ -2,7 +2,10 @@ package com.task.hotelhop.presentation.navigation
 
 import android.net.Uri
 import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.task.hotelhop.R
 
 sealed class Screen(val route: String) {
     data object Splash : Screen("splash")
@@ -29,4 +32,6 @@ data class BottomNavDestination(
     val icon: ImageVector
 )
 
-val bottomNavDestinations = emptyList<BottomNavDestination>()
+val bottomNavDestinations = listOf(
+    BottomNavDestination(Screen.Home, R.string.nav_home, Icons.Filled.Home)
+)
