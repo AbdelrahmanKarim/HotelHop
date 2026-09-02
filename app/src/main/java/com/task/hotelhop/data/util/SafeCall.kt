@@ -1,4 +1,4 @@
-package com.example.atmos.data.util
+package com.task.hotelhop.data.util
 
 import android.database.sqlite.SQLiteException
 import coil3.network.HttpException

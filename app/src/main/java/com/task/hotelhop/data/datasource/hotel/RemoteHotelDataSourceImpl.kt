@@ -1,6 +1,6 @@
 package com.task.hotelhop.data.datasource.hotel
 
-import com.example.atmos.data.util.safeCall
+import com.task.hotelhop.data.util.safeCall
 import com.task.hotelhop.data.remote.dto.HotelDetailsWrapperDto
 import com.task.hotelhop.data.remote.dto.HotelsListResponseDto
 import com.task.hotelhop.data.remote.dto.SemanticSearchResponseDto

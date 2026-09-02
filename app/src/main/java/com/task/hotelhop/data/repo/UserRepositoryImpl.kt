@@ -14,33 +14,47 @@ class UserRepositoryImpl(
 
     override suspend fun loginWithEmail(email: String, password: String): User {
         val user = remoteUser.loginWithEmail(email, password).getOrThrow()
-        localUser.setUserLoggedIn(true) // Save session!
+        localUser.setUserLoggedIn(true)
+        localUser.saveUser(user)
         return user
     }
 
     override suspend fun signUpWithEmail(firstName: String, lastName: String, email: String, password: String, gender: String): User {
-        val displayName = "$firstName $lastName"
-        val user = remoteUser.signUpWithEmail(email, password, displayName).getOrThrow()
-        localUser.setUserLoggedIn(true) // Save session!
+        val displayName = "$firstName $lastName".trim()
+        val remote = remoteUser.signUpWithEmail(email, password, displayName).getOrThrow()
+        val user = remote.copy(firstName = firstName, lastName = lastName, gender = gender)
+        localUser.setUserLoggedIn(true)
+        localUser.saveUser(user)
         return user
     }
 
     override suspend fun signInWithGoogle(idToken: String): User {
         val user = remoteUser.signInWithGoogle(idToken).getOrThrow()
-        localUser.setUserLoggedIn(true) // Save session!
+        localUser.setUserLoggedIn(true)
+        localUser.saveUser(user)
         return user
     }
 
     override suspend fun logout() {
         remoteUser.logout().getOrThrow()
-        localUser.setUserLoggedIn(false) // Clear session!
+        localUser.setUserLoggedIn(false)
+        localUser.clearUser()
     }
 
-    // Add the new Flow override:
     override fun isUserLoggedIn(): Flow<Boolean> = localUser.isUserLoggedIn()
 
-    override suspend fun getCurrentUser(): User? =
-        remoteUser.getCurrentUser()
+    override suspend fun getCurrentUser(): User? {
+        val cached = localUser.getCachedUser()
+        val remote = runCatching { remoteUser.getCurrentUser() }.getOrNull()
+        return when {
+            cached != null && cached.firstName.isNotBlank() -> cached
+            remote != null -> {
+                localUser.saveUser(remote)
+                remote
+            }
+            else -> cached
+        }
+    }
 
     override fun isDarkMode(): Flow<Boolean?> = localUser.isDarkMode()
 
@@ -48,7 +62,7 @@ class UserRepositoryImpl(
 
     override fun hasSeenOnboarding(): Flow<Boolean> = localUser.hasSeenOnboarding()
 
-    override suspend fun toggleTheme(isDark: Boolean) {
+    override suspend fun toggleTheme(isDark: Boolean?) {
         localUser.toggleTheme(isDark)
     }
 
