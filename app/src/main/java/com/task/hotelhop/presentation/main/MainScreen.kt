@@ -27,6 +27,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.task.hotelhop.presentation.checkout.CheckoutScreen
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.favorite.FavoriteScreen
 import com.task.hotelhop.presentation.home.HomeScreen
@@ -167,6 +168,12 @@ private fun HotelHopNavGraph(navController: NavHostController) {
                     navController.navigate(Screen.Checkout.createRoute(hotelId))
                 }
             )
+        }
+        composable(
+            route = Screen.Checkout.route,
+            arguments = listOf(navArgument(Screen.Checkout.ARG_HOTEL_ID) { type = NavType.StringType })
+        ) {
+            CheckoutScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

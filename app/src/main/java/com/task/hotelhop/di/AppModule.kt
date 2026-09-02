@@ -17,12 +17,17 @@ import com.task.hotelhop.data.datasource.user.RemoteUserDataSource
 import com.task.hotelhop.data.datasource.user.RemoteUserDataSourceImpl
 import com.task.hotelhop.data.local.db.HotelHopDatabase
 import com.task.hotelhop.data.remote.service.HotelApiService
+import com.task.hotelhop.data.remote.service.PaymobApiService
 import com.task.hotelhop.data.repo.HotelRepositoryImpl
+import com.task.hotelhop.data.repo.PaymentRepositoryImpl
 import com.task.hotelhop.data.repo.UserRepositoryImpl
 import com.task.hotelhop.domain.repo.HotelRepository
+import com.task.hotelhop.domain.repo.PaymentRepository
 import com.task.hotelhop.domain.repo.UserRepository
 import com.task.hotelhop.domain.usecase.hotel.*
+import com.task.hotelhop.domain.usecase.payment.CreateCardPaymentUseCase
 import com.task.hotelhop.domain.usecase.user.*
+import com.task.hotelhop.presentation.checkout.CheckoutViewModel
 import com.task.hotelhop.presentation.favorite.FavoriteViewModel
 import com.task.hotelhop.presentation.home.HomeViewModel
 import com.task.hotelhop.presentation.hotel_details.HotelDetailsViewModel
@@ -64,6 +69,7 @@ val networkModule = module {
 
     // API Service
     single { HotelApiService(client = get()) }
+    single { PaymobApiService(client = get()) }
 }
 
 val localModule = module {
@@ -100,6 +106,7 @@ val dataSourceModule = module {
 val repositoryModule = module {
     single<UserRepository> { UserRepositoryImpl(remoteUser = get(), localUser = get()) }
     single<HotelRepository> { HotelRepositoryImpl(remoteDS = get(), localDS = get()) }
+    single<PaymentRepository> { PaymentRepositoryImpl(paymobApi = get()) }
 }
 
 val useCaseModule = module {
@@ -122,6 +129,7 @@ val useCaseModule = module {
     factory { GetHotelDetailsUseCase(repository = get()) }
     factory { SearchHotelsUseCase(repository = get()) }
     factory { ToggleFavoriteUseCase(repository = get()) }
+    factory { CreateCardPaymentUseCase(repository = get()) }
 }
 
 val viewModelModule = module {
@@ -134,6 +142,7 @@ val viewModelModule = module {
     viewModelOf(::SearchViewModel)
     viewModelOf(::FavoriteViewModel)
     viewModelOf(::HotelDetailsViewModel)
+    viewModelOf(::CheckoutViewModel)
 }
 
 val appModule = listOf(
