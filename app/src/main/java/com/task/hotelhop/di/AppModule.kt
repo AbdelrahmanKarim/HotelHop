@@ -27,6 +27,7 @@ import com.task.hotelhop.domain.repo.UserRepository
 import com.task.hotelhop.domain.usecase.hotel.*
 import com.task.hotelhop.domain.usecase.payment.CreateCardPaymentUseCase
 import com.task.hotelhop.domain.usecase.user.*
+import com.task.hotelhop.presentation.account.AccountViewModel
 import com.task.hotelhop.presentation.checkout.CheckoutViewModel
 import com.task.hotelhop.presentation.favorite.FavoriteViewModel
 import com.task.hotelhop.presentation.home.HomeViewModel
@@ -143,6 +144,7 @@ val viewModelModule = module {
     viewModelOf(::FavoriteViewModel)
     viewModelOf(::HotelDetailsViewModel)
     viewModelOf(::CheckoutViewModel)
+    viewModelOf(::AccountViewModel)
 }
 
 val appModule = listOf(

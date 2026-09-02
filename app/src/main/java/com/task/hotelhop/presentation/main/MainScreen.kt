@@ -27,6 +27,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.task.hotelhop.presentation.account.AccountScreen
 import com.task.hotelhop.presentation.checkout.CheckoutScreen
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.favorite.FavoriteScreen
@@ -155,6 +156,15 @@ private fun HotelHopNavGraph(navController: NavHostController) {
             FavoriteScreen(
                 onNavigateToDetails = { hotelId ->
                     navController.navigate(Screen.HotelDetails.createRoute(hotelId))
+                }
+            )
+        }
+        composable(Screen.Account.route) {
+            AccountScreen(
+                onLoggedOut = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
