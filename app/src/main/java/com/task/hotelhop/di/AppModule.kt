@@ -25,6 +25,7 @@ import com.task.hotelhop.domain.usecase.hotel.*
 import com.task.hotelhop.domain.usecase.user.*
 import com.task.hotelhop.presentation.favorite.FavoriteViewModel
 import com.task.hotelhop.presentation.home.HomeViewModel
+import com.task.hotelhop.presentation.hotel_details.HotelDetailsViewModel
 import com.task.hotelhop.presentation.login.LoginViewModel
 import com.task.hotelhop.presentation.main.MainViewModel
 import com.task.hotelhop.presentation.on_boarding.OnboardingViewModel
@@ -132,6 +133,7 @@ val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::FavoriteViewModel)
+    viewModelOf(::HotelDetailsViewModel)
 }
 
 val appModule = listOf(
