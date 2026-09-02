@@ -29,6 +29,7 @@ import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.navigation.BottomNavBar
 import com.task.hotelhop.presentation.navigation.Screen
 import com.task.hotelhop.presentation.navigation.bottomNavDestinations
+import com.task.hotelhop.presentation.on_boarding.OnboardingScreen
 import com.task.hotelhop.presentation.splash.SplashScreen
 import com.task.hotelhop.presentation.util.applyAppLanguage
 import com.task.hotelhop.presentation.util.findActivityOrNull
@@ -104,6 +105,15 @@ private fun HotelHopNavGraph(navController: NavHostController) {
                     }
                 },
                 onNavigateToHome = { navController.navigateToHome() }
+            )
+        }
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
             )
         }
     }

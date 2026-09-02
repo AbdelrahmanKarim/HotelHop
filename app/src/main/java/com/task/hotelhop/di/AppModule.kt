@@ -24,6 +24,7 @@ import com.task.hotelhop.domain.repo.UserRepository
 import com.task.hotelhop.domain.usecase.hotel.*
 import com.task.hotelhop.domain.usecase.user.*
 import com.task.hotelhop.presentation.main.MainViewModel
+import com.task.hotelhop.presentation.on_boarding.OnboardingViewModel
 import com.task.hotelhop.presentation.splash.SplashViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -120,6 +121,7 @@ val useCaseModule = module {
 val viewModelModule = module {
     viewModelOf(::MainViewModel)
     viewModelOf(::SplashViewModel)
+    viewModelOf(::OnboardingViewModel)
 }
 
 val appModule = listOf(
