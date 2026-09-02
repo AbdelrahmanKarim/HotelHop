@@ -28,6 +28,7 @@ import com.task.hotelhop.presentation.login.LoginViewModel
 import com.task.hotelhop.presentation.main.MainViewModel
 import com.task.hotelhop.presentation.on_boarding.OnboardingViewModel
 import com.task.hotelhop.presentation.register.RegisterViewModel
+import com.task.hotelhop.presentation.search.SearchViewModel
 import com.task.hotelhop.presentation.splash.SplashViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -128,6 +129,7 @@ val viewModelModule = module {
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
     viewModelOf(::HomeViewModel)
+    viewModelOf(::SearchViewModel)
 }
 
 val appModule = listOf(
