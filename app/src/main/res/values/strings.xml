@@ -1,3 +1,166 @@
 <resources>
-    <string name="app_name">HotelHop</string>
+    <string name="app_name">Hotel Hop</string>
+
+    <!-- Common -->
+    <string name="retry">Retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="loading">Loading</string>
+    <string name="price_per_night">$%1$.0f / night</string>
+    <string name="price_value">$%1$.2f</string>
+    <string name="star_rating">%1$.1f stars</string>
+    <string name="content_desc_hotel_image">Hotel photo</string>
+    <string name="content_desc_favorite">Favorite</string>
+    <string name="content_desc_unfavorite">Remove from favorites</string>
+    <string name="content_desc_back">Navigate back</string>
+
+    <!-- Errors -->
+    <string name="error_network">You appear to be offline. Check your connection and try again.</string>
+    <string name="error_timeout">The connection took too long. Please try again.</string>
+    <string name="error_server">We\'re having trouble reaching our servers. Please try again later.</string>
+    <string name="error_offline_no_cache">You\'re offline and no saved hotels are available.</string>
+    <string name="error_empty_search">No hotels found matching your search.</string>
+    <string name="error_invalid_booking_date">Check-out must be after check-in.</string>
+    <string name="error_invalid_booking_past">Booking dates cannot be in the past.</string>
+    <string name="error_invalid_room_count">Please select at least one room.</string>
+    <string name="error_invalid_credentials">The email or password you entered is incorrect.</string>
+    <string name="error_user_exists">An account with this email already exists.</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
+    <string name="error_google_sign_in">Google sign-in failed. Please try again.</string>
+    <string name="error_google_not_configured">Google Sign-In is not set up for Hotel Hop yet. Add the app SHA-1 in Firebase, enable Google sign-in, and replace google-services.json.</string>
+    <string name="error_map_unavailable">Map location is not available for this hotel.</string>
+    <string name="error_validation_email">Enter a valid email address.</string>
+    <string name="error_validation_password">Password must be at least 6 characters.</string>
+    <string name="error_validation_required">This field is required.</string>
+    <string name="error_validation_gender">Please select a gender.</string>
+
+    <!-- Splash -->
+    <string name="splash_tagline">Find your next stay</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_search_title">Search smarter</string>
+    <string name="onboarding_search_body">Describe where you want to go in plain language and we\'ll find matching hotels.</string>
+    <string name="onboarding_favorite_title">Save the ones you love</string>
+    <string name="onboarding_favorite_body">Tap the heart on any hotel to keep it in your favorites, even offline.</string>
+    <string name="onboarding_book_title">Book in a hop</string>
+    <string name="onboarding_book_body">Pick dates, rooms, and simulate a booking with a clear price breakdown.</string>
+    <string name="onboarding_get_started">Get started</string>
+    <string name="onboarding_skip">Skip</string>
+
+    <!-- Auth -->
+    <string name="login_title">Welcome back</string>
+    <string name="login_subtitle">Sign in to keep exploring hotels.</string>
+    <string name="login_email">Email</string>
+    <string name="login_password">Password</string>
+    <string name="login_action">Sign in</string>
+    <string name="login_google">Sign in with Google</string>
+    <string name="login_no_account">Don\'t have an account?</string>
+    <string name="login_register">Create one</string>
+    <string name="login_continue_guest">Continue as a guest</string>
+    <string name="auth_required_title">Sign in to continue</string>
+    <string name="auth_required_body">You should login first to favorite hotels or book a stay.</string>
+    <string name="auth_required_action">Go to login</string>
+    <string name="unfavorite_confirm_title">Remove from favorites?</string>
+    <string name="unfavorite_confirm_body">Are you sure you want to remove this hotel from favorites?</string>
+    <string name="unfavorite_confirm_action">Remove</string>
+    <string name="register_title">Create account</string>
+    <string name="register_subtitle">A few details and you\'re ready to hop.</string>
+    <string name="register_first_name">First name</string>
+    <string name="register_last_name">Last name</string>
+    <string name="register_gender">Gender</string>
+    <string name="register_gender_male">Male</string>
+    <string name="register_gender_female">Female</string>
+    <string name="register_gender_unspecified">Prefer not to say</string>
+    <string name="register_action">Create account</string>
+    <string name="register_have_account">Already have an account?</string>
+    <string name="register_login">Sign in</string>
+    <string name="content_desc_show_password">Show password</string>
+    <string name="content_desc_hide_password">Hide password</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_account">Account</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Where to next?</string>
+    <string name="home_search_hint">Try “Cairo” or “beach resort”</string>
+    <string name="home_empty_title">No hotels yet</string>
+    <string name="home_empty_body">Pull to refresh to load hotels for you.</string>
+    <string name="home_offline_title">No connection</string>
+    <string name="home_offline_body">You\'re offline and we don\'t have any saved hotels to show.</string>
+    <string name="home_search_empty_title">No matches</string>
+    <string name="home_search_empty_body">Try a different city or a shorter search.</string>
+    <string name="home_section_popular">Popular stays</string>
+    <string name="home_section_best_price">Best price</string>
+    <string name="home_section_explore">Explore</string>
+    <string name="home_promo_title">Summer escape deal</string>
+    <string name="home_promo_body">Save on top-rated stays this week. Limited rooms left.</string>
+    <string name="home_promo_snackbar">Open Search to find your next stay.</string>
+    <string name="search_idle_title">Find a hotel</string>
+    <string name="search_idle_body">Search by city or hotel name, or use the filters below.</string>
+    <string name="search_filter_price">Price</string>
+    <string name="search_filter_price_budget">Under $100</string>
+    <string name="search_filter_price_mid">$100 – $200</string>
+    <string name="search_filter_price_premium">$200+</string>
+    <string name="search_filter_rating">Rating</string>
+    <string name="search_filter_rating_3">3+ stars</string>
+    <string name="search_filter_rating_4">4+ stars</string>
+    <string name="search_filter_rating_45">4.5+ stars</string>
+
+    <!-- Details -->
+    <string name="details_title">Hotel details</string>
+    <string name="details_about">About</string>
+    <string name="details_amenities">Amenities</string>
+    <string name="details_view_on_map">View on map</string>
+    <string name="details_book">Book stay</string>
+    <string name="details_image_pager">Hotel gallery, image %1$d of %2$d</string>
+    <string name="details_image_counter">%1$d / %2$d</string>
+
+    <!-- Favorites -->
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty_title">No favorites yet</string>
+    <string name="favorites_empty_body">Tap the heart on a hotel to save it here.</string>
+    <string name="favorites_guest_title">Sign in to save favorites</string>
+    <string name="favorites_guest_body">Guests can browse hotels, but favorites require an account.</string>
+
+    <!-- Checkout -->
+    <string name="checkout_title">Checkout</string>
+    <string name="checkout_check_in">Check-in</string>
+    <string name="checkout_check_out">Check-out</string>
+    <string name="checkout_rooms">Rooms</string>
+    <string name="checkout_nights">%1$d nights</string>
+    <string name="checkout_subtotal">Subtotal</string>
+    <string name="checkout_vat">VAT (15%%)</string>
+    <string name="checkout_total">Total</string>
+    <string name="checkout_confirm">Pay with cash</string>
+    <string name="checkout_success_title">Booking confirmed</string>
+    <string name="checkout_success_body">Your booking reference is %1$s</string>
+    <string name="checkout_success_done">Done</string>
+    <string name="checkout_pick_date">Select date</string>
+    <string name="checkout_payment_method">Payment method</string>
+    <string name="checkout_pay_cash">Cash on arrival</string>
+    <string name="checkout_pay_card">Pay with card</string>
+    <string name="checkout_phone">Phone number</string>
+    <string name="checkout_payment_failed">Card payment was cancelled or failed. You can try again.</string>
+    <string name="content_desc_increase_rooms">Increase rooms</string>
+    <string name="content_desc_decrease_rooms">Decrease rooms</string>
+
+    <!-- Account -->
+    <string name="account_title">Account</string>
+    <string name="account_guest">Guest</string>
+    <string name="account_theme">Theme</string>
+    <string name="account_theme_light">Light</string>
+    <string name="account_theme_dark">Dark</string>
+    <string name="account_theme_system">System</string>
+    <string name="account_language">Language</string>
+    <string name="account_language_english">English</string>
+    <string name="account_language_arabic">Arabic</string>
+    <string name="account_sign_in">Sign in</string>
+    <string name="account_logout">Log out</string>
+    <string name="account_logout_confirm_title">Log out?</string>
+    <string name="account_logout_confirm_body">You\'ll be signed out of your account. You can sign in again or continue as a guest.</string>
 </resources>
