@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.task.hotelhop.R
+import com.task.hotelhop.domain.booking.BookingCalculator
 import com.task.hotelhop.domain.exception.AppException
 import com.task.hotelhop.domain.usecase.hotel.GetHotelDetailsUseCase
 import com.task.hotelhop.domain.usecase.payment.CreateCardPaymentUseCase
@@ -19,7 +20,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
-import java.util.concurrent.TimeUnit
 
 class CheckoutViewModel(
     savedStateHandle: SavedStateHandle,
@@ -87,7 +87,7 @@ class CheckoutViewModel(
     }
 
     private fun updateRooms(count: Int) {
-        _uiState.update { recalculate(it.copy(roomCount = count.coerceIn(1, 10))) }
+        _uiState.update { recalculate(it.copy(roomCount = BookingCalculator.coerceRooms(count))) }
     }
 
     private fun confirmBooking() {
@@ -147,32 +147,25 @@ class CheckoutViewModel(
     }
 
     private fun recalculate(state: CheckoutUiState): CheckoutUiState {
-        val nights = if (state.checkInMillis != null && state.checkOutMillis != null && state.checkOutMillis > state.checkInMillis) {
-            TimeUnit.MILLISECONDS.toDays(state.checkOutMillis - state.checkInMillis).toInt().coerceAtLeast(1)
-        } else {
-            0
-        }
-        val price = state.hotel?.pricePerNight ?: 0.0
-        val subtotal = price * nights * state.roomCount
-        val vat = subtotal * VAT_RATE
-        return state.copy(nights = nights, subtotal = subtotal, vat = vat, total = subtotal + vat)
+        val nights = BookingCalculator.nights(state.checkInMillis, state.checkOutMillis)
+        val quote = BookingCalculator.quote(
+            pricePerNight = state.hotel?.pricePerNight ?: 0.0,
+            nights = nights,
+            roomCount = state.roomCount
+        )
+        return state.copy(
+            nights = quote.nights,
+            subtotal = quote.subtotal,
+            vat = quote.vat,
+            total = quote.total
+        )
     }
 
     private fun newReference(): String = "HH-" + UUID.randomUUID().toString().take(8).uppercase()
 
     private companion object {
-        const val VAT_RATE = 0.15
-
         fun dateError(checkIn: Long?, checkOut: Long?): UiText? {
-            if (checkIn == null && checkOut == null) return null
-            val today = startOfTodayUtc()
-            if ((checkIn != null && checkIn < today) || (checkOut != null && checkOut < today)) {
-                return AppException.PastBookingDateException().toUiText()
-            }
-            if (checkIn != null && checkOut != null && checkOut <= checkIn) {
-                return AppException.InvalidBookingDateException().toUiText()
-            }
-            return null
+            return BookingCalculator.dateViolation(checkIn, checkOut, startOfTodayUtc())?.toUiText()
         }
     }
 }
