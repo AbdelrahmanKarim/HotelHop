@@ -89,12 +89,12 @@ fun HotelCard(
                     }
                 }
             }
-            Column(modifier = Modifier.padding(if (compact) 12.dp else 16.dp)) {
+            Column(modifier = Modifier.padding(if (compact) 10.dp else 16.dp)) {
                 Text(
                     text = hotel.name,
                     style = HotelHopTheme.typography.titleSmall,
                     color = colors.textTitle,
-                    maxLines = 1,
+                    maxLines = if (compact) 2 else 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -105,31 +105,58 @@ fun HotelCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Spacer(modifier = Modifier.height(if (compact) 8.dp else 10.dp))
+                if (compact) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Filled.Star,
                             contentDescription = null,
                             tint = colors.secondary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = stringResource(R.string.star_rating, hotel.rating),
-                            style = HotelHopTheme.typography.labelMedium,
-                            color = colors.textTitle
+                            style = HotelHopTheme.typography.labelSmall,
+                            color = colors.textTitle,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = stringResource(R.string.price_per_night, hotel.pricePerNight),
-                        style = HotelHopTheme.typography.labelLarge,
-                        color = colors.primary
+                        style = HotelHopTheme.typography.labelMedium,
+                        color = colors.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = null,
+                                tint = colors.secondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.star_rating, hotel.rating),
+                                style = HotelHopTheme.typography.labelMedium,
+                                color = colors.textTitle
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.price_per_night, hotel.pricePerNight),
+                            style = HotelHopTheme.typography.labelLarge,
+                            color = colors.primary
+                        )
+                    }
                 }
             }
         }

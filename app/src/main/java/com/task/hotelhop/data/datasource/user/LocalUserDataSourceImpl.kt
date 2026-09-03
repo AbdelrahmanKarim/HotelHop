@@ -41,9 +41,23 @@ class LocalUserDataSourceImpl(
 
     override fun isUserLoggedIn(): Flow<Boolean> = dataStore.data.map { it[IS_LOGGED_IN_KEY] ?: false }
 
+    override fun isGuest(): Flow<Boolean> = dataStore.data.map { it[IS_GUEST_KEY] ?: false }
+
     override suspend fun setUserLoggedIn(isLoggedIn: Boolean) {
-        dataStore.edit { it[IS_LOGGED_IN_KEY] = isLoggedIn }
+        dataStore.edit {
+            it[IS_LOGGED_IN_KEY] = isLoggedIn
+            if (isLoggedIn) it[IS_GUEST_KEY] = false
+            if (!isLoggedIn) it[IS_GUEST_KEY] = false
+        }
         if (!isLoggedIn) clearUser()
+    }
+
+    override suspend fun enterGuestMode() {
+        dataStore.edit {
+            it[IS_GUEST_KEY] = true
+            it[IS_LOGGED_IN_KEY] = false
+        }
+        clearUser()
     }
 
     override suspend fun saveUser(user: User) {
@@ -85,6 +99,7 @@ class LocalUserDataSourceImpl(
         val LANGUAGE_KEY = stringPreferencesKey("language_code")
         val ONBOARDING_KEY = booleanPreferencesKey("has_seen_onboarding")
         val IS_LOGGED_IN_KEY = booleanPreferencesKey("is_logged_in")
+        val IS_GUEST_KEY = booleanPreferencesKey("is_guest")
         val USER_ID_KEY = stringPreferencesKey("cached_user_id")
         val USER_FIRST_NAME_KEY = stringPreferencesKey("cached_user_first_name")
         val USER_LAST_NAME_KEY = stringPreferencesKey("cached_user_last_name")

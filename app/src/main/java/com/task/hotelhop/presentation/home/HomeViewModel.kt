@@ -7,6 +7,7 @@ import com.task.hotelhop.domain.entity.Hotel
 import com.task.hotelhop.domain.exception.AppException
 import com.task.hotelhop.domain.usecase.hotel.GetPagedHotelsUseCase
 import com.task.hotelhop.domain.usecase.hotel.ToggleFavoriteUseCase
+import com.task.hotelhop.domain.usecase.user.CheckUserLoggedInUseCase
 import com.task.hotelhop.presentation.util.UiText
 import com.task.hotelhop.presentation.util.toUiText
 import kotlinx.coroutines.Job
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val getPagedHotelsUseCase: GetPagedHotelsUseCase,
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val checkUserLoggedInUseCase: CheckUserLoggedInUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -32,6 +34,7 @@ class HomeViewModel(
     private var pagingJob: Job? = null
 
     init {
+        observeAuth()
         observeCachedHotels()
         refresh(isInitial = true)
     }
@@ -40,12 +43,27 @@ class HomeViewModel(
         when (event) {
             HomeUiEvent.Refresh, HomeUiEvent.Retry -> refresh(isInitial = false)
             HomeUiEvent.LoadNextPage -> loadNextPage()
-            is HomeUiEvent.FavoriteToggled -> toggleFavorite(event.hotel)
+            is HomeUiEvent.FavoriteToggled -> requestFavoriteToggle(event.hotel)
             is HomeUiEvent.HotelClicked -> viewModelScope.launch {
                 _effect.send(HomeUiEffect.NavigateToDetails(event.hotelId))
             }
             HomeUiEvent.PromoClicked -> viewModelScope.launch {
                 _effect.send(HomeUiEffect.ShowSnackbar(UiText.StringResource(R.string.home_promo_snackbar)))
+            }
+            HomeUiEvent.LoginRequiredConfirmed -> viewModelScope.launch {
+                _uiState.update { it.copy(showLoginRequired = false) }
+                _effect.send(HomeUiEffect.NavigateToLogin)
+            }
+            HomeUiEvent.LoginRequiredDismissed -> _uiState.update { it.copy(showLoginRequired = false) }
+            HomeUiEvent.UnfavoriteConfirmed -> confirmUnfavorite()
+            HomeUiEvent.UnfavoriteDismissed -> _uiState.update { it.copy(pendingUnfavorite = null) }
+        }
+    }
+
+    private fun observeAuth() {
+        viewModelScope.launch {
+            checkUserLoggedInUseCase().collect { isLoggedIn ->
+                _uiState.update { it.copy(isLoggedIn = isLoggedIn) }
             }
         }
     }
@@ -53,11 +71,19 @@ class HomeViewModel(
     private fun observeCachedHotels() {
         viewModelScope.launch {
             getPagedHotelsUseCase.observeHotels().collect { hotels ->
+                val uniqueHotels = hotels.distinctBy { it.id }
                 _uiState.update { state ->
+                    if (uniqueHotels.isEmpty() && state.hotels.isNotEmpty() &&
+                        (state.isRefreshing || state.isLoading)
+                    ) {
+                        return@update state
+                    }
+                    val (popular, bestPrice) = featuredSections(uniqueHotels)
                     state.copy(
-                        hotels = hotels,
-                        popularHotels = hotels.sortedByDescending { it.rating }.take(8),
-                        bestPriceHotels = hotels.filter { it.pricePerNight > 0 }.sortedBy { it.pricePerNight }.take(8),
+                        hotels = uniqueHotels,
+                        popularHotels = popular,
+                        bestPriceHotels = bestPrice,
+                        isLoading = uniqueHotels.isEmpty() && state.isLoading,
                         isOfflineEmpty = false
                     )
                 }
@@ -77,13 +103,23 @@ class HomeViewModel(
                     isOfflineEmpty = false
                 )
             }
-            runCatching { getPagedHotelsUseCase(PAGE_SIZE, 0) }
+            val result = runCatching { getPagedHotelsUseCase(PAGE_SIZE, 0) }
+            result
                 .onSuccess { loaded ->
                     offset = loaded
-                    _uiState.update { it.copy(endReached = loaded < PAGE_SIZE) }
+                    _uiState.update {
+                        it.copy(
+                            endReached = loaded < PAGE_SIZE,
+                            isRefreshing = false,
+                            isLoading = it.hotels.isEmpty() && loaded > 0
+                        )
+                    }
                 }
-                .onFailure { handlePagingError(it, isInitial = true) }
-            _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+                .onFailure { throwable ->
+                    offset = _uiState.value.hotels.size
+                    handlePagingError(throwable, isInitial = true)
+                    _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+                }
         }
     }
 
@@ -114,14 +150,46 @@ class HomeViewModel(
         }
     }
 
-    private fun toggleFavorite(hotel: Hotel) {
+    private fun requestFavoriteToggle(hotel: Hotel) {
+        if (!_uiState.value.isLoggedIn) {
+            _uiState.update { it.copy(showLoginRequired = true) }
+            return
+        }
+        if (hotel.isFavorite) {
+            _uiState.update { it.copy(pendingUnfavorite = hotel) }
+            return
+        }
+        toggleFavorite(hotel, favorite = true)
+    }
+
+    private fun confirmUnfavorite() {
+        val hotel = _uiState.value.pendingUnfavorite ?: return
+        _uiState.update { it.copy(pendingUnfavorite = null) }
+        toggleFavorite(hotel, favorite = false)
+    }
+
+    private fun toggleFavorite(hotel: Hotel, favorite: Boolean) {
         viewModelScope.launch {
-            runCatching { toggleFavoriteUseCase(hotel.id, !hotel.isFavorite) }
+            runCatching { toggleFavoriteUseCase(hotel.id, favorite) }
                 .onFailure { _effect.send(HomeUiEffect.ShowSnackbar(it.toUiText())) }
         }
     }
 
     private companion object {
         const val PAGE_SIZE = 20
+        const val FEATURED_COUNT = 8
+
+        fun featuredSections(hotels: List<Hotel>): Pair<List<Hotel>, List<Hotel>> {
+            val popular = hotels
+                .sortedWith(compareByDescending<Hotel> { it.rating }.thenBy { it.id })
+                .take(FEATURED_COUNT)
+            val popularIds = popular.map { it.id }.toSet()
+            val remaining = hotels.filter { it.id !in popularIds }
+            val bestPrice = remaining
+                .filter { it.pricePerNight > 0 }
+                .sortedWith(compareBy<Hotel> { it.pricePerNight }.thenByDescending { it.rating }.thenBy { it.id })
+                .take(FEATURED_COUNT)
+            return popular to bestPrice
+        }
     }
 }

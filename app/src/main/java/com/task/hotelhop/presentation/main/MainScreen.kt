@@ -1,8 +1,5 @@
 package com.task.hotelhop.presentation.main
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,7 +12,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -40,9 +36,9 @@ import com.task.hotelhop.presentation.navigation.bottomNavDestinations
 import com.task.hotelhop.presentation.on_boarding.OnboardingScreen
 import com.task.hotelhop.presentation.register.RegisterScreen
 import com.task.hotelhop.presentation.search.SearchScreen
-import com.task.hotelhop.presentation.splash.SplashScreen
 import com.task.hotelhop.presentation.util.applyAppLanguage
 import com.task.hotelhop.presentation.util.findActivityOrNull
+import com.task.hotelhop.presentation.util.navigateOnce
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -58,14 +54,16 @@ fun MainScreen(
         view.context.findActivityOrNull()?.applyAppLanguage(languageCode)
     }
 
+    val startDestination = uiState.startDestination ?: return
+
     HotelHopTheme(isDarkTheme = isDarkTheme) {
         StatusBarIconColor(darkIcons = !isDarkTheme)
-        MainScaffold()
+        MainScaffold(startDestination = startDestination)
     }
 }
 
 @Composable
-private fun MainScaffold() {
+private fun MainScaffold(startDestination: String) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -73,14 +71,10 @@ private fun MainScaffold() {
     val showBottomBar = currentRoute in bottomBarRoutes
 
     Scaffold(
-        containerColor = Color.Transparent,
+        containerColor = HotelHopTheme.colors.surface,
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            AnimatedVisibility(
-                visible = showBottomBar,
-                enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { it })
-            ) {
+            if (showBottomBar) {
                 BottomNavBar(navController = navController)
             }
         }
@@ -91,32 +85,23 @@ private fun MainScaffold() {
                 .consumeWindowInsets(innerPadding)
                 .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
-            HotelHopNavGraph(navController = navController)
+            HotelHopNavGraph(
+                navController = navController,
+                startDestination = startDestination
+            )
         }
     }
 }
 
 @Composable
-private fun HotelHopNavGraph(navController: NavHostController) {
+private fun HotelHopNavGraph(
+    navController: NavHostController,
+    startDestination: String
+) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Splash.route
+        startDestination = startDestination
     ) {
-        composable(Screen.Splash.route) {
-            SplashScreen(
-                onNavigateToOnboarding = {
-                    navController.navigate(Screen.Onboarding.route) {
-                        popUpTo(Screen.Splash.route) { inclusive = true }
-                    }
-                },
-                onNavigateToLogin = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.Splash.route) { inclusive = true }
-                    }
-                },
-                onNavigateToHome = { navController.navigateToHome() }
-            )
-        }
         composable(Screen.Onboarding.route) {
             OnboardingScreen(
                 onNavigateToLogin = {
@@ -141,31 +126,31 @@ private fun HotelHopNavGraph(navController: NavHostController) {
         composable(Screen.Home.route) {
             HomeScreen(
                 onNavigateToDetails = { hotelId ->
-                    navController.navigate(Screen.HotelDetails.createRoute(hotelId))
-                }
+                    navController.navigateOnce(Screen.HotelDetails.createRoute(hotelId))
+                },
+                onNavigateToLogin = { navController.navigateToLogin() }
             )
         }
         composable(Screen.Search.route) {
             SearchScreen(
                 onNavigateToDetails = { hotelId ->
-                    navController.navigate(Screen.HotelDetails.createRoute(hotelId))
-                }
+                    navController.navigateOnce(Screen.HotelDetails.createRoute(hotelId))
+                },
+                onNavigateToLogin = { navController.navigateToLogin() }
             )
         }
         composable(Screen.Favorites.route) {
             FavoriteScreen(
                 onNavigateToDetails = { hotelId ->
-                    navController.navigate(Screen.HotelDetails.createRoute(hotelId))
-                }
+                    navController.navigateOnce(Screen.HotelDetails.createRoute(hotelId))
+                },
+                onNavigateToLogin = { navController.navigateToLogin() }
             )
         }
         composable(Screen.Account.route) {
             AccountScreen(
-                onLoggedOut = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
+                onLoggedOut = { navController.navigateToLogin(clearStack = true) },
+                onNavigateToLogin = { navController.navigateToLogin() }
             )
         }
         composable(
@@ -175,8 +160,9 @@ private fun HotelHopNavGraph(navController: NavHostController) {
             HotelDetailsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCheckout = { hotelId ->
-                    navController.navigate(Screen.Checkout.createRoute(hotelId))
-                }
+                    navController.navigateOnce(Screen.Checkout.createRoute(hotelId))
+                },
+                onNavigateToLogin = { navController.navigateToLogin() }
             )
         }
         composable(
@@ -195,6 +181,15 @@ private fun NavHostController.navigateToHome() {
     }
 }
 
+private fun NavHostController.navigateToLogin(clearStack: Boolean = false) {
+    navigate(Screen.Login.route) {
+        if (clearStack) {
+            popUpTo(0) { inclusive = true }
+        }
+        launchSingleTop = true
+    }
+}
+
 @Composable
 private fun StatusBarIconColor(darkIcons: Boolean) {
     val view = LocalView.current
@@ -202,7 +197,10 @@ private fun StatusBarIconColor(darkIcons: Boolean) {
         SideEffect {
             val window = view.context.findActivityOrNull()?.window ?: return@SideEffect
             WindowCompat.setDecorFitsSystemWindows(window, false)
-            WindowInsetsControllerCompat(window, view).isAppearanceLightStatusBars = darkIcons
+            WindowInsetsControllerCompat(window, view).apply {
+                isAppearanceLightStatusBars = darkIcons
+                isAppearanceLightNavigationBars = darkIcons
+            }
         }
     }
 }

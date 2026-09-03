@@ -9,9 +9,8 @@ class CreateCardPaymentUseCase(private val repository: PaymentRepository) {
         amountEgp: Double,
         hotelName: String,
         reference: String,
-        user: User?,
-        phoneNumber: String
+        user: User?
     ): PaymobCheckoutSession {
-        return repository.createCardCheckout(amountEgp, hotelName, reference, user, phoneNumber)
+        return repository.createCardCheckout(amountEgp, hotelName, reference, user)
     }
 }

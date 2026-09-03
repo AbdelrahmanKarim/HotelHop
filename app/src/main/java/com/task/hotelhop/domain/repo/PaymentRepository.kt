@@ -8,7 +8,6 @@ interface PaymentRepository {
         amountEgp: Double,
         hotelName: String,
         reference: String,
-        user: User?,
-        phoneNumber: String
+        user: User?
     ): PaymobCheckoutSession
 }

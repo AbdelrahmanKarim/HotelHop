@@ -11,6 +11,7 @@ fun Throwable.toUiText(): UiText {
         is AppException.OfflineAndNoCacheException -> UiText.StringResource(R.string.error_offline_no_cache)
         is AppException.EmptySearchResultsException -> UiText.StringResource(R.string.error_empty_search)
         is AppException.InvalidBookingDateException -> UiText.StringResource(R.string.error_invalid_booking_date)
+        is AppException.PastBookingDateException -> UiText.StringResource(R.string.error_invalid_booking_past)
         is AppException.InvalidRoomCountException -> UiText.StringResource(R.string.error_invalid_room_count)
         is AppException.InvalidCredentialsException -> UiText.StringResource(R.string.error_invalid_credentials)
         is AppException.UserAlreadyExistsException -> UiText.StringResource(R.string.error_user_exists)

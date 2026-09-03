@@ -56,6 +56,8 @@ import com.task.hotelhop.presentation.design_system.component.HotelHopButton
 import com.task.hotelhop.presentation.design_system.component.HotelHopEmptyState
 import com.task.hotelhop.presentation.design_system.component.HotelHopOutlinedButton
 import com.task.hotelhop.presentation.design_system.component.HotelHopSnackbarHost
+import com.task.hotelhop.presentation.design_system.component.LoginRequiredDialog
+import com.task.hotelhop.presentation.design_system.component.UnfavoriteConfirmDialog
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.util.CollectEffect
 import org.koin.androidx.compose.koinViewModel
@@ -64,6 +66,7 @@ import org.koin.androidx.compose.koinViewModel
 fun HotelDetailsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToCheckout: (String) -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: HotelDetailsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -75,6 +78,7 @@ fun HotelDetailsScreen(
         when (effect) {
             HotelDetailsUiEffect.NavigateBack -> onNavigateBack()
             is HotelDetailsUiEffect.NavigateToCheckout -> onNavigateToCheckout(effect.hotelId)
+            HotelDetailsUiEffect.NavigateToLogin -> onNavigateToLogin()
             is HotelDetailsUiEffect.OpenMap -> {
                 runCatching {
                     context.startActivity(Intent(Intent.ACTION_VIEW, effect.locationUrl.toUri()))
@@ -122,6 +126,17 @@ fun HotelDetailsScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+
+    LoginRequiredDialog(
+        visible = uiState.showLoginRequired,
+        onLogin = { viewModel.onEvent(HotelDetailsUiEvent.LoginRequiredConfirmed) },
+        onDismiss = { viewModel.onEvent(HotelDetailsUiEvent.LoginRequiredDismissed) }
+    )
+    UnfavoriteConfirmDialog(
+        visible = uiState.showUnfavoriteConfirm,
+        onConfirm = { viewModel.onEvent(HotelDetailsUiEvent.UnfavoriteConfirmed) },
+        onDismiss = { viewModel.onEvent(HotelDetailsUiEvent.UnfavoriteDismissed) }
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)

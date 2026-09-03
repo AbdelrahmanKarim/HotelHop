@@ -20,8 +20,7 @@ class PaymentRepositoryImpl(
         amountEgp: Double,
         hotelName: String,
         reference: String,
-        user: User?,
-        phoneNumber: String
+        user: User?
     ): PaymobCheckoutSession {
         val amountCents = (amountEgp * 100).roundToInt().coerceAtLeast(100)
         val firstName = user?.firstName?.ifBlank { "Guest" } ?: "Guest"
@@ -45,7 +44,7 @@ class PaymentRepositoryImpl(
                         firstName = firstName,
                         lastName = lastName,
                         email = email,
-                        phoneNumber = phoneNumber
+                        phoneNumber = PLACEHOLDER_PHONE
                     ),
                     customer = PaymobCustomer(
                         firstName = firstName,
@@ -71,5 +70,6 @@ class PaymentRepositoryImpl(
 
     companion object {
         const val REDIRECT_URI = "https://hotelhop.app/paymob/result"
+        private const val PLACEHOLDER_PHONE = "NA"
     }
 }

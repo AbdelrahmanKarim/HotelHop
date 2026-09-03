@@ -45,6 +45,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun AccountScreen(
     onLoggedOut: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: AccountViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -54,7 +55,8 @@ fun AccountScreen(
 
     CollectEffect(viewModel.effect) { effect ->
         when (effect) {
-            AccountUiEffect.NavigateToLogin -> onLoggedOut()
+            AccountUiEffect.NavigateToLogin -> onNavigateToLogin()
+            AccountUiEffect.LoggedOut -> onLoggedOut()
             is AccountUiEffect.RecreateForLanguage -> {
                 context.findActivityOrNull()?.applyAppLanguage(effect.languageCode)
             }
@@ -168,10 +170,17 @@ fun AccountScreen(
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                HotelHopButton(
-                    text = stringResource(R.string.account_logout),
-                    onClick = { viewModel.onEvent(AccountUiEvent.LogoutClicked) }
-                )
+                if (uiState.isLoggedIn) {
+                    HotelHopButton(
+                        text = stringResource(R.string.account_logout),
+                        onClick = { viewModel.onEvent(AccountUiEvent.LogoutClicked) }
+                    )
+                } else {
+                    HotelHopButton(
+                        text = stringResource(R.string.account_sign_in),
+                        onClick = { viewModel.onEvent(AccountUiEvent.SignInClicked) }
+                    )
+                }
             }
         }
         HotelHopSnackbarHost(

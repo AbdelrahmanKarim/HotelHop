@@ -21,18 +21,18 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
@@ -54,19 +54,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.task.hotelhop.R
-import com.task.hotelhop.presentation.design_system.component.HotelHopAlertDialog
 import com.task.hotelhop.presentation.design_system.component.HotelHopButton
 import com.task.hotelhop.presentation.design_system.component.HotelHopSnackbarHost
-import com.task.hotelhop.presentation.design_system.component.HotelHopTextField
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.util.CollectEffect
+import com.task.hotelhop.presentation.util.DAY_IN_MILLIS
+import com.task.hotelhop.presentation.util.startOfTodayUtc
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -111,7 +111,13 @@ fun CheckoutScreen(
             .background(colors.surface)
             .statusBarsPadding()
     ) {
-        if (uiState.isLoading) {
+        if (uiState.bookingReference != null) {
+            BookingSuccessContent(
+                reference = uiState.bookingReference!!,
+                hotelName = uiState.hotel?.name.orEmpty(),
+                onDone = { viewModel.onEvent(CheckoutUiEvent.DismissSuccess) }
+            )
+        } else if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = colors.primary)
             }
@@ -240,17 +246,6 @@ fun CheckoutScreen(
                             onClick = { viewModel.onEvent(CheckoutUiEvent.PaymentMethodSelected(PaymentMethod.CARD)) }
                         )
                     }
-                    if (uiState.paymentMethod == PaymentMethod.CARD) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        HotelHopTextField(
-                            value = uiState.phone,
-                            onValueChange = { viewModel.onEvent(CheckoutUiEvent.PhoneChanged(it)) },
-                            label = stringResource(R.string.checkout_phone),
-                            error = uiState.phoneError,
-                            leadingIcon = { Icon(Icons.Outlined.Phone, contentDescription = null, tint = colors.textHint) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-                        )
-                    }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
                 Surface(color = colors.surfaceLow, shadowElevation = 8.dp) {
@@ -280,6 +275,7 @@ fun CheckoutScreen(
 
     if (showCheckInPicker) {
         CheckoutDatePicker(
+            minDateMillis = startOfTodayUtc(),
             onDismiss = { showCheckInPicker = false },
             onConfirm = {
                 viewModel.onEvent(CheckoutUiEvent.CheckInSelected(it))
@@ -288,21 +284,14 @@ fun CheckoutScreen(
         )
     }
     if (showCheckOutPicker) {
+        val minCheckOut = (uiState.checkInMillis?.plus(DAY_IN_MILLIS)) ?: (startOfTodayUtc() + DAY_IN_MILLIS)
         CheckoutDatePicker(
+            minDateMillis = minCheckOut,
             onDismiss = { showCheckOutPicker = false },
             onConfirm = {
                 viewModel.onEvent(CheckoutUiEvent.CheckOutSelected(it))
                 showCheckOutPicker = false
             }
-        )
-    }
-    uiState.bookingReference?.let { reference ->
-        HotelHopAlertDialog(
-            title = stringResource(R.string.checkout_success_title),
-            body = stringResource(R.string.checkout_success_body, reference),
-            confirmLabel = stringResource(R.string.ok),
-            onConfirm = { viewModel.onEvent(CheckoutUiEvent.DismissSuccess) },
-            onDismiss = { viewModel.onEvent(CheckoutUiEvent.DismissSuccess) }
         )
     }
 }
@@ -376,11 +365,78 @@ private fun PriceRow(label: String, value: String, emphasize: Boolean = false) {
     }
 }
 
+@Composable
+private fun BookingSuccessContent(
+    reference: String,
+    hotelName: String,
+    onDone: () -> Unit
+) {
+    val colors = HotelHopTheme.colors
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(
+            imageVector = Icons.Filled.CheckCircle,
+            contentDescription = null,
+            tint = colors.primary,
+            modifier = Modifier.size(88.dp)
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.checkout_success_title),
+            style = HotelHopTheme.typography.headlineMedium,
+            color = colors.textTitle,
+            textAlign = TextAlign.Center
+        )
+        if (hotelName.isNotBlank()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = hotelName,
+                style = HotelHopTheme.typography.titleSmall,
+                color = colors.textBody,
+                textAlign = TextAlign.Center
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = stringResource(R.string.checkout_success_body, reference),
+            style = HotelHopTheme.typography.bodyMedium,
+            color = colors.textBody,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        HotelHopButton(
+            text = stringResource(R.string.checkout_success_done),
+            onClick = onDone
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CheckoutDatePicker(onDismiss: () -> Unit, onConfirm: (Long) -> Unit) {
+private fun CheckoutDatePicker(
+    minDateMillis: Long,
+    onDismiss: () -> Unit,
+    onConfirm: (Long) -> Unit
+) {
     val colors = HotelHopTheme.colors
-    val pickerState = rememberDatePickerState()
+    val selectableDates = remember(minDateMillis) {
+        object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= minDateMillis
+            override fun isSelectableYear(year: Int): Boolean {
+                return year >= java.time.LocalDate.now().year
+            }
+        }
+    }
+    val pickerState = rememberDatePickerState(
+        initialSelectedDateMillis = minDateMillis,
+        selectableDates = selectableDates
+    )
     val dateColors = DatePickerDefaults.colors(
         containerColor = colors.surfaceLow,
         titleContentColor = colors.textTitle,

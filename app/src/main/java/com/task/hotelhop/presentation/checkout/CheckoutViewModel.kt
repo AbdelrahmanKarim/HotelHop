@@ -10,6 +10,7 @@ import com.task.hotelhop.domain.usecase.payment.CreateCardPaymentUseCase
 import com.task.hotelhop.domain.usecase.user.GetUserDetailsUseCase
 import com.task.hotelhop.presentation.navigation.Screen
 import com.task.hotelhop.presentation.util.UiText
+import com.task.hotelhop.presentation.util.startOfTodayUtc
 import com.task.hotelhop.presentation.util.toUiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +47,6 @@ class CheckoutViewModel(
             is CheckoutUiEvent.CheckOutSelected -> updateDates(checkIn = _uiState.value.checkInMillis, checkOut = event.millis)
             CheckoutUiEvent.IncrementRooms -> updateRooms(_uiState.value.roomCount + 1)
             CheckoutUiEvent.DecrementRooms -> updateRooms(_uiState.value.roomCount - 1)
-            is CheckoutUiEvent.PhoneChanged -> _uiState.update { it.copy(phone = event.value, phoneError = null) }
             is CheckoutUiEvent.PaymentMethodSelected -> _uiState.update { it.copy(paymentMethod = event.method) }
             CheckoutUiEvent.ConfirmBooking -> confirmBooking()
             is CheckoutUiEvent.CardPaymentFinished -> onCardResult(event.success)
@@ -70,13 +70,19 @@ class CheckoutViewModel(
     }
 
     private fun updateDates(checkIn: Long?, checkOut: Long?) {
+        val adjustedCheckOut = if (checkIn != null && checkOut != null && checkOut <= checkIn) {
+            null
+        } else {
+            checkOut
+        }
         _uiState.update { state ->
-            val dateError = if (checkIn != null && checkOut != null && checkOut <= checkIn) {
-                AppException.InvalidBookingDateException().toUiText()
-            } else {
-                null
-            }
-            recalculate(state.copy(checkInMillis = checkIn, checkOutMillis = checkOut, dateError = dateError))
+            recalculate(
+                state.copy(
+                    checkInMillis = checkIn,
+                    checkOutMillis = adjustedCheckOut,
+                    dateError = dateError(checkIn, adjustedCheckOut)
+                )
+            )
         }
     }
 
@@ -86,17 +92,16 @@ class CheckoutViewModel(
 
     private fun confirmBooking() {
         val state = _uiState.value
-        val checkIn = state.checkInMillis
-        val checkOut = state.checkOutMillis
-        when {
-            checkIn == null || checkOut == null || checkOut <= checkIn -> {
-                _uiState.update { it.copy(dateError = AppException.InvalidBookingDateException().toUiText()) }
+        val error = dateError(state.checkInMillis, state.checkOutMillis)
+            ?: if (state.checkInMillis == null || state.checkOutMillis == null) {
+                AppException.InvalidBookingDateException().toUiText()
+            } else {
+                null
             }
+        when {
+            error != null -> _uiState.update { it.copy(dateError = error) }
             state.roomCount < 1 -> viewModelScope.launch {
                 _effect.send(CheckoutUiEffect.ShowSnackbar(AppException.InvalidRoomCountException().toUiText()))
-            }
-            state.paymentMethod == PaymentMethod.CARD && state.phone.isBlank() -> {
-                _uiState.update { it.copy(phoneError = UiText.StringResource(R.string.error_validation_required)) }
             }
             state.paymentMethod == PaymentMethod.CASH -> {
                 _uiState.update { it.copy(bookingReference = newReference()) }
@@ -118,8 +123,7 @@ class CheckoutViewModel(
                     amountEgp = state.total,
                     hotelName = hotel.name,
                     reference = reference,
-                    user = user,
-                    phoneNumber = state.phone.trim()
+                    user = user
                 )
             }.onSuccess { session ->
                 _effect.send(CheckoutUiEffect.LaunchPaymob(session.checkoutUrl))
@@ -158,5 +162,17 @@ class CheckoutViewModel(
 
     private companion object {
         const val VAT_RATE = 0.15
+
+        fun dateError(checkIn: Long?, checkOut: Long?): UiText? {
+            if (checkIn == null && checkOut == null) return null
+            val today = startOfTodayUtc()
+            if ((checkIn != null && checkIn < today) || (checkOut != null && checkOut < today)) {
+                return AppException.PastBookingDateException().toUiText()
+            }
+            if (checkIn != null && checkOut != null && checkOut <= checkIn) {
+                return AppException.InvalidBookingDateException().toUiText()
+            }
+            return null
+        }
     }
 }

@@ -4,6 +4,7 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.task.hotelhop.R
+import com.task.hotelhop.domain.usecase.user.EnterGuestModeUseCase
 import com.task.hotelhop.domain.usecase.user.LoginWithEmailUseCase
 import com.task.hotelhop.domain.usecase.user.SignInWithGoogleUseCase
 import com.task.hotelhop.presentation.util.UiText
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val loginWithEmailUseCase: LoginWithEmailUseCase,
-    private val signInWithGoogleUseCase: SignInWithGoogleUseCase
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val enterGuestModeUseCase: EnterGuestModeUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -48,6 +50,17 @@ class LoginViewModel(
             LoginUiEvent.RegisterClicked -> viewModelScope.launch {
                 _effect.send(LoginUiEffect.NavigateToRegister)
             }
+            LoginUiEvent.ContinueAsGuestClicked -> continueAsGuest()
+        }
+    }
+
+    private fun continueAsGuest() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            runCatching { enterGuestModeUseCase() }
+                .onSuccess { _effect.send(LoginUiEffect.NavigateToHome) }
+                .onFailure { _effect.send(LoginUiEffect.ShowSnackbar(it.toUiText())) }
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 

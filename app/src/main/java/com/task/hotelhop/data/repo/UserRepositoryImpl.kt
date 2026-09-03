@@ -43,6 +43,12 @@ class UserRepositoryImpl(
 
     override fun isUserLoggedIn(): Flow<Boolean> = localUser.isUserLoggedIn()
 
+    override fun isGuest(): Flow<Boolean> = localUser.isGuest()
+
+    override suspend fun enterGuestMode() {
+        localUser.enterGuestMode()
+    }
+
     override suspend fun getCurrentUser(): User? {
         val cached = localUser.getCachedUser()
         val remote = runCatching { remoteUser.getCurrentUser() }.getOrNull()

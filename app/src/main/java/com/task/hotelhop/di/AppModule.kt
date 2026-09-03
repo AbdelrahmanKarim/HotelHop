@@ -37,7 +37,6 @@ import com.task.hotelhop.presentation.main.MainViewModel
 import com.task.hotelhop.presentation.on_boarding.OnboardingViewModel
 import com.task.hotelhop.presentation.register.RegisterViewModel
 import com.task.hotelhop.presentation.search.SearchViewModel
-import com.task.hotelhop.presentation.splash.SplashViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -101,7 +100,7 @@ val dataSourceModule = module {
 
     // Hotel Data Sources
     single<RemoteHotelDataSource> { RemoteHotelDataSourceImpl(apiService = get()) }
-    single<LocalHotelDataSource> { LocalHotelDataSourceImpl(dao = get()) }
+    single<LocalHotelDataSource> { LocalHotelDataSourceImpl(db = get(), dao = get()) }
 }
 
 val repositoryModule = module {
@@ -124,6 +123,8 @@ val useCaseModule = module {
     factory { CheckUserLoggedInUseCase(repository = get()) }
     factory { ObserveOnboardingUseCase(repository = get()) }
     factory { ObserveLanguageUseCase(repository = get()) }
+    factory { ObserveGuestUseCase(repository = get()) }
+    factory { EnterGuestModeUseCase(repository = get()) }
     // Hotel Use Cases
     factory { GetPagedHotelsUseCase(repository = get()) }
     factory { GetFavoriteHotelsUseCase(repository = get()) }
@@ -135,7 +136,6 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     viewModelOf(::MainViewModel)
-    viewModelOf(::SplashViewModel)
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
