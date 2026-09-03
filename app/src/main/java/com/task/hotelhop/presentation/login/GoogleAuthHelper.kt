@@ -15,7 +15,7 @@ import java.util.UUID
 object GoogleAuthHelper {
 
     suspend fun requestIdToken(activityContext: Context): String {
-        val serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+        val serverClientId = webClientId(activityContext)
         require(serverClientId.isNotBlank()) { "missing_web_client" }
 
         val credentialManager = CredentialManager.create(activityContext)
@@ -59,6 +59,18 @@ object GoogleAuthHelper {
             return GoogleIdTokenCredential.createFrom(credential.data).idToken
         }
         error("unsupported_credential")
+    }
+
+    private fun webClientId(context: Context): String {
+        val fromBuildConfig = BuildConfig.GOOGLE_WEB_CLIENT_ID.trim()
+        if (fromBuildConfig.isNotBlank()) return fromBuildConfig
+        val resId = context.resources.getIdentifier(
+            "default_web_client_id",
+            "string",
+            context.packageName
+        )
+        if (resId == 0) return ""
+        return context.getString(resId).trim()
     }
 
     private fun sha256(value: String): String {

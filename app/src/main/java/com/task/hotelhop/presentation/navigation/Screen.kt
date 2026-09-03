@@ -11,7 +11,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.task.hotelhop.R
 
 sealed class Screen(val route: String) {
-    data object Splash : Screen("splash")
     data object Onboarding : Screen("onboarding")
     data object Login : Screen("login")
     data object Register : Screen("register")

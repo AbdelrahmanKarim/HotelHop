@@ -8,6 +8,6 @@ interface LocalHotelDataSource {
     fun getFavoriteHotels(): Flow<List<HotelEntity>>
     suspend fun getHotelById(hotelId: String): HotelEntity?
     suspend fun cacheHotels(hotels: List<HotelEntity>)
+    suspend fun replaceNonFavoriteCache(hotels: List<HotelEntity>)
     suspend fun toggleFavorite(hotelId: String, isFavorite: Boolean)
-    suspend fun clearNonFavoriteCache()
 }

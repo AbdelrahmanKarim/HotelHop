@@ -20,6 +20,7 @@ sealed interface LoginUiEvent {
     data class GoogleIdTokenReceived(val idToken: String) : LoginUiEvent
     data class GoogleSignInFailed(val message: UiText) : LoginUiEvent
     data object RegisterClicked : LoginUiEvent
+    data object ContinueAsGuestClicked : LoginUiEvent
 }
 
 sealed interface LoginUiEffect {

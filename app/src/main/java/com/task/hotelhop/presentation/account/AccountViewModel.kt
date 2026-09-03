@@ -3,6 +3,7 @@ package com.task.hotelhop.presentation.account
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.task.hotelhop.domain.usecase.user.ChangeLanguageUseCase
+import com.task.hotelhop.domain.usecase.user.CheckUserLoggedInUseCase
 import com.task.hotelhop.domain.usecase.user.GetUserDetailsUseCase
 import com.task.hotelhop.domain.usecase.user.LogOutUseCase
 import com.task.hotelhop.domain.usecase.user.ObserveLanguageUseCase
@@ -23,7 +24,8 @@ class AccountViewModel(
     private val observeLanguageUseCase: ObserveLanguageUseCase,
     private val toggleThemeUseCase: ToggleThemeUseCase,
     private val changeLanguageUseCase: ChangeLanguageUseCase,
-    private val logOutUseCase: LogOutUseCase
+    private val logOutUseCase: LogOutUseCase,
+    private val checkUserLoggedInUseCase: CheckUserLoggedInUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AccountUiState())
@@ -33,6 +35,11 @@ class AccountViewModel(
     val effect = _effect.receiveAsFlow()
 
     init {
+        viewModelScope.launch {
+            checkUserLoggedInUseCase().collect { isLoggedIn ->
+                _uiState.update { it.copy(isLoggedIn = isLoggedIn) }
+            }
+        }
         viewModelScope.launch {
             val user = runCatching { getUserDetailsUseCase() }.getOrNull()
             _uiState.update { it.copy(user = user, isLoading = false) }
@@ -62,6 +69,9 @@ class AccountViewModel(
         when (event) {
             is AccountUiEvent.ThemeSelected -> setTheme(event.mode)
             is AccountUiEvent.LanguageSelected -> setLanguage(event.languageCode)
+            AccountUiEvent.SignInClicked -> viewModelScope.launch {
+                _effect.send(AccountUiEffect.NavigateToLogin)
+            }
             AccountUiEvent.LogoutClicked -> _uiState.update { it.copy(showLogoutConfirm = true) }
             AccountUiEvent.LogoutDismissed -> _uiState.update { it.copy(showLogoutConfirm = false) }
             AccountUiEvent.LogoutConfirmed -> logout()
@@ -93,7 +103,7 @@ class AccountViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(showLogoutConfirm = false) }
             runCatching { logOutUseCase() }
-                .onSuccess { _effect.send(AccountUiEffect.NavigateToLogin) }
+                .onSuccess { _effect.send(AccountUiEffect.LoggedOut) }
                 .onFailure { _effect.send(AccountUiEffect.ShowSnackbar(it.toUiText())) }
         }
     }

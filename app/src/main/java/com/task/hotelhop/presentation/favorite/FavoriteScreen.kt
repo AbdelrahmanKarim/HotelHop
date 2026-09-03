@@ -34,6 +34,8 @@ import com.task.hotelhop.R
 import com.task.hotelhop.presentation.design_system.component.HotelCard
 import com.task.hotelhop.presentation.design_system.component.HotelHopEmptyState
 import com.task.hotelhop.presentation.design_system.component.HotelHopSnackbarHost
+import com.task.hotelhop.presentation.design_system.component.LoginRequiredDialog
+import com.task.hotelhop.presentation.design_system.component.UnfavoriteConfirmDialog
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.util.CollectEffect
 import org.koin.androidx.compose.koinViewModel
@@ -41,6 +43,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun FavoriteScreen(
     onNavigateToDetails: (String) -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: FavoriteViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,6 +54,7 @@ fun FavoriteScreen(
     CollectEffect(viewModel.effect) { effect ->
         when (effect) {
             is FavoriteUiEffect.NavigateToDetails -> onNavigateToDetails(effect.hotelId)
+            FavoriteUiEffect.NavigateToLogin -> onNavigateToLogin()
             is FavoriteUiEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message.asString(context))
         }
     }
@@ -78,6 +82,16 @@ fun FavoriteScreen(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = colors.primary)
                     }
+                }
+                !uiState.isLoggedIn -> {
+                    HotelHopEmptyState(
+                        icon = Icons.Outlined.FavoriteBorder,
+                        title = stringResource(R.string.favorites_guest_title),
+                        body = stringResource(R.string.favorites_guest_body),
+                        actionLabel = stringResource(R.string.auth_required_action),
+                        onAction = { viewModel.onEvent(FavoriteUiEvent.SignInClicked) },
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
                 uiState.hotels.isEmpty() -> {
                     HotelHopEmptyState(
@@ -115,4 +129,15 @@ fun FavoriteScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+
+    LoginRequiredDialog(
+        visible = uiState.showLoginRequired,
+        onLogin = { viewModel.onEvent(FavoriteUiEvent.LoginRequiredConfirmed) },
+        onDismiss = { viewModel.onEvent(FavoriteUiEvent.LoginRequiredDismissed) }
+    )
+    UnfavoriteConfirmDialog(
+        visible = uiState.pendingUnfavorite != null,
+        onConfirm = { viewModel.onEvent(FavoriteUiEvent.UnfavoriteConfirmed) },
+        onDismiss = { viewModel.onEvent(FavoriteUiEvent.UnfavoriteDismissed) }
+    )
 }

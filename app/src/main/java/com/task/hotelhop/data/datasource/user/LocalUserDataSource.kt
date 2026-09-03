@@ -11,7 +11,9 @@ interface LocalUserDataSource {
     suspend fun changeLanguage(languageCode: String)
     suspend fun completeOnboarding()
     fun isUserLoggedIn(): Flow<Boolean>
+    fun isGuest(): Flow<Boolean>
     suspend fun setUserLoggedIn(isLoggedIn: Boolean)
+    suspend fun enterGuestMode()
     suspend fun saveUser(user: User)
     suspend fun getCachedUser(): User?
     suspend fun clearUser()

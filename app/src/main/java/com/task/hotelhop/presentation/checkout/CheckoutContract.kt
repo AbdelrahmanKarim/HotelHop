@@ -15,8 +15,6 @@ data class CheckoutUiState(
     val subtotal: Double = 0.0,
     val vat: Double = 0.0,
     val total: Double = 0.0,
-    val phone: String = "",
-    val phoneError: UiText? = null,
     val paymentMethod: PaymentMethod = PaymentMethod.CASH,
     val isSubmitting: Boolean = false,
     val bookingReference: String? = null,
@@ -28,7 +26,6 @@ sealed interface CheckoutUiEvent {
     data class CheckOutSelected(val millis: Long) : CheckoutUiEvent
     data object IncrementRooms : CheckoutUiEvent
     data object DecrementRooms : CheckoutUiEvent
-    data class PhoneChanged(val value: String) : CheckoutUiEvent
     data class PaymentMethodSelected(val method: PaymentMethod) : CheckoutUiEvent
     data object ConfirmBooking : CheckoutUiEvent
     data class CardPaymentFinished(val success: Boolean) : CheckoutUiEvent

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.task.hotelhop.domain.entity.Hotel
 import com.task.hotelhop.domain.usecase.hotel.GetFavoriteHotelsUseCase
 import com.task.hotelhop.domain.usecase.hotel.ToggleFavoriteUseCase
+import com.task.hotelhop.domain.usecase.user.CheckUserLoggedInUseCase
 import com.task.hotelhop.presentation.util.toUiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,8 @@ import kotlinx.coroutines.launch
 
 class FavoriteViewModel(
     private val getFavoriteHotelsUseCase: GetFavoriteHotelsUseCase,
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val checkUserLoggedInUseCase: CheckUserLoggedInUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FavoriteUiState())
@@ -26,6 +28,11 @@ class FavoriteViewModel(
     val effect = _effect.receiveAsFlow()
 
     init {
+        viewModelScope.launch {
+            checkUserLoggedInUseCase().collect { isLoggedIn ->
+                _uiState.update { it.copy(isLoggedIn = isLoggedIn) }
+            }
+        }
         viewModelScope.launch {
             getFavoriteHotelsUseCase()
                 .catch { throwable ->
@@ -40,16 +47,42 @@ class FavoriteViewModel(
 
     fun onEvent(event: FavoriteUiEvent) {
         when (event) {
-            is FavoriteUiEvent.FavoriteToggled -> toggleFavorite(event.hotel)
+            is FavoriteUiEvent.FavoriteToggled -> requestFavoriteToggle(event.hotel)
             is FavoriteUiEvent.HotelClicked -> viewModelScope.launch {
                 _effect.send(FavoriteUiEffect.NavigateToDetails(event.hotelId))
             }
+            FavoriteUiEvent.SignInClicked,
+            FavoriteUiEvent.LoginRequiredConfirmed -> viewModelScope.launch {
+                _uiState.update { it.copy(showLoginRequired = false) }
+                _effect.send(FavoriteUiEffect.NavigateToLogin)
+            }
+            FavoriteUiEvent.LoginRequiredDismissed -> _uiState.update { it.copy(showLoginRequired = false) }
+            FavoriteUiEvent.UnfavoriteConfirmed -> confirmUnfavorite()
+            FavoriteUiEvent.UnfavoriteDismissed -> _uiState.update { it.copy(pendingUnfavorite = null) }
         }
     }
 
-    private fun toggleFavorite(hotel: Hotel) {
+    private fun requestFavoriteToggle(hotel: Hotel) {
+        if (!_uiState.value.isLoggedIn) {
+            _uiState.update { it.copy(showLoginRequired = true) }
+            return
+        }
+        if (hotel.isFavorite) {
+            _uiState.update { it.copy(pendingUnfavorite = hotel) }
+            return
+        }
+        toggleFavorite(hotel, favorite = true)
+    }
+
+    private fun confirmUnfavorite() {
+        val hotel = _uiState.value.pendingUnfavorite ?: return
+        _uiState.update { it.copy(pendingUnfavorite = null) }
+        toggleFavorite(hotel, favorite = false)
+    }
+
+    private fun toggleFavorite(hotel: Hotel, favorite: Boolean) {
         viewModelScope.launch {
-            runCatching { toggleFavoriteUseCase(hotel.id, !hotel.isFavorite) }
+            runCatching { toggleFavoriteUseCase(hotel.id, favorite) }
                 .onFailure { _effect.send(FavoriteUiEffect.ShowSnackbar(it.toUiText())) }
         }
     }

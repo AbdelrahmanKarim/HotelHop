@@ -45,6 +45,8 @@ import com.task.hotelhop.domain.entity.Hotel
 import com.task.hotelhop.presentation.design_system.component.HotelCard
 import com.task.hotelhop.presentation.design_system.component.HotelHopEmptyState
 import com.task.hotelhop.presentation.design_system.component.HotelHopSnackbarHost
+import com.task.hotelhop.presentation.design_system.component.LoginRequiredDialog
+import com.task.hotelhop.presentation.design_system.component.UnfavoriteConfirmDialog
 import com.task.hotelhop.presentation.design_system.theme.HotelHopTheme
 import com.task.hotelhop.presentation.util.CollectEffect
 import org.koin.androidx.compose.koinViewModel
@@ -53,6 +55,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun HomeScreen(
     onNavigateToDetails: (String) -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,6 +67,7 @@ fun HomeScreen(
     CollectEffect(viewModel.effect) { effect ->
         when (effect) {
             is HomeUiEffect.NavigateToDetails -> onNavigateToDetails(effect.hotelId)
+            HomeUiEffect.NavigateToLogin -> onNavigateToLogin()
             is HomeUiEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message.asString(context))
         }
     }
@@ -91,6 +95,11 @@ fun HomeScreen(
         ) {
             when {
                 uiState.isLoading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = colors.primary)
+                    }
+                }
+                uiState.isRefreshing && uiState.hotels.isEmpty() -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = colors.primary)
                     }
@@ -205,6 +214,17 @@ fun HomeScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+
+    LoginRequiredDialog(
+        visible = uiState.showLoginRequired,
+        onLogin = { viewModel.onEvent(HomeUiEvent.LoginRequiredConfirmed) },
+        onDismiss = { viewModel.onEvent(HomeUiEvent.LoginRequiredDismissed) }
+    )
+    UnfavoriteConfirmDialog(
+        visible = uiState.pendingUnfavorite != null,
+        onConfirm = { viewModel.onEvent(HomeUiEvent.UnfavoriteConfirmed) },
+        onDismiss = { viewModel.onEvent(HomeUiEvent.UnfavoriteDismissed) }
+    )
 }
 
 @Composable

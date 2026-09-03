@@ -17,4 +17,6 @@ interface UserRepository {
     suspend fun completeOnboarding()
 
     fun isUserLoggedIn(): Flow<Boolean>
+    fun isGuest(): Flow<Boolean>
+    suspend fun enterGuestMode()
 }

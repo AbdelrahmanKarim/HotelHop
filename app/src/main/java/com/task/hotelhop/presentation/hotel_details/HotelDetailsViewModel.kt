@@ -8,6 +8,7 @@ import com.task.hotelhop.domain.exception.AppException
 import com.task.hotelhop.domain.usecase.hotel.GetFavoriteHotelsUseCase
 import com.task.hotelhop.domain.usecase.hotel.GetHotelDetailsUseCase
 import com.task.hotelhop.domain.usecase.hotel.ToggleFavoriteUseCase
+import com.task.hotelhop.domain.usecase.user.CheckUserLoggedInUseCase
 import com.task.hotelhop.presentation.navigation.Screen
 import com.task.hotelhop.presentation.util.UiText
 import com.task.hotelhop.presentation.util.toUiText
@@ -22,7 +23,8 @@ class HotelDetailsViewModel(
     savedStateHandle: SavedStateHandle,
     private val getHotelDetailsUseCase: GetHotelDetailsUseCase,
     private val getFavoriteHotelsUseCase: GetFavoriteHotelsUseCase,
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val checkUserLoggedInUseCase: CheckUserLoggedInUseCase
 ) : ViewModel() {
 
     private val hotelId: String = checkNotNull(savedStateHandle[Screen.HotelDetails.ARG_HOTEL_ID])
@@ -34,8 +36,17 @@ class HotelDetailsViewModel(
     val effect = _effect.receiveAsFlow()
 
     init {
+        observeAuth()
         loadDetails()
         observeFavoriteStatus()
+    }
+
+    private fun observeAuth() {
+        viewModelScope.launch {
+            checkUserLoggedInUseCase().collect { isLoggedIn ->
+                _uiState.update { it.copy(isLoggedIn = isLoggedIn) }
+            }
+        }
     }
 
     private fun observeFavoriteStatus() {
@@ -52,14 +63,19 @@ class HotelDetailsViewModel(
     fun onEvent(event: HotelDetailsUiEvent) {
         when (event) {
             HotelDetailsUiEvent.Retry -> loadDetails()
-            HotelDetailsUiEvent.FavoriteToggled -> toggleFavorite()
+            HotelDetailsUiEvent.FavoriteToggled -> requestFavoriteToggle()
             HotelDetailsUiEvent.ViewOnMapClicked -> openMap()
-            HotelDetailsUiEvent.BookClicked -> viewModelScope.launch {
-                _effect.send(HotelDetailsUiEffect.NavigateToCheckout(hotelId))
-            }
+            HotelDetailsUiEvent.BookClicked -> requestBooking()
             HotelDetailsUiEvent.BackClicked -> viewModelScope.launch {
                 _effect.send(HotelDetailsUiEffect.NavigateBack)
             }
+            HotelDetailsUiEvent.LoginRequiredConfirmed -> viewModelScope.launch {
+                _uiState.update { it.copy(showLoginRequired = false) }
+                _effect.send(HotelDetailsUiEffect.NavigateToLogin)
+            }
+            HotelDetailsUiEvent.LoginRequiredDismissed -> _uiState.update { it.copy(showLoginRequired = false) }
+            HotelDetailsUiEvent.UnfavoriteConfirmed -> confirmUnfavorite()
+            HotelDetailsUiEvent.UnfavoriteDismissed -> _uiState.update { it.copy(showUnfavoriteConfirm = false) }
         }
     }
 
@@ -83,13 +99,41 @@ class HotelDetailsViewModel(
         }
     }
 
-    private fun toggleFavorite() {
+    private fun requestFavoriteToggle() {
+        val hotel = _uiState.value.hotel ?: return
+        if (!_uiState.value.isLoggedIn) {
+            _uiState.update { it.copy(showLoginRequired = true) }
+            return
+        }
+        if (hotel.isFavorite) {
+            _uiState.update { it.copy(showUnfavoriteConfirm = true) }
+            return
+        }
+        toggleFavorite(favorite = true)
+    }
+
+    private fun requestBooking() {
+        if (!_uiState.value.isLoggedIn) {
+            _uiState.update { it.copy(showLoginRequired = true) }
+            return
+        }
+        viewModelScope.launch {
+            _effect.send(HotelDetailsUiEffect.NavigateToCheckout(hotelId))
+        }
+    }
+
+    private fun confirmUnfavorite() {
+        _uiState.update { it.copy(showUnfavoriteConfirm = false) }
+        toggleFavorite(favorite = false)
+    }
+
+    private fun toggleFavorite(favorite: Boolean) {
         val hotel = _uiState.value.hotel ?: return
         viewModelScope.launch {
-            runCatching { toggleFavoriteUseCase(hotel.id, !hotel.isFavorite) }
+            runCatching { toggleFavoriteUseCase(hotel.id, favorite) }
                 .onSuccess {
                     _uiState.update { state ->
-                        state.copy(hotel = state.hotel?.copy(isFavorite = !hotel.isFavorite))
+                        state.copy(hotel = state.hotel?.copy(isFavorite = favorite))
                     }
                 }
                 .onFailure { _effect.send(HotelDetailsUiEffect.ShowSnackbar(it.toUiText())) }

@@ -22,17 +22,17 @@ class HotelRepositoryImpl(
 
         return remoteResult.fold(
             onSuccess = { dtoResponse ->
-                if (offset == 0) localDS.clearNonFavoriteCache()
-                val newEntities = dtoResponse.data.map { it.toEntity() }
                 val currentCache = localDS.getCachedHotels().first()
-                val favoriteIds = currentCache.filter { it.isFavorite }.map { it.id }
-
-                val entitiesToSave = newEntities.map { entity ->
-                    if (favoriteIds.contains(entity.id)) entity.copy(isFavorite = true) else entity
+                val favoriteIds = currentCache.filter { it.isFavorite }.map { it.id }.toSet()
+                val entitiesToSave = dtoResponse.data.map { it.toEntity() }.map { entity ->
+                    if (entity.id in favoriteIds) entity.copy(isFavorite = true) else entity
                 }
-
-                localDS.cacheHotels(entitiesToSave)
-                newEntities.size
+                if (offset == 0) {
+                    localDS.replaceNonFavoriteCache(entitiesToSave)
+                } else {
+                    localDS.cacheHotels(entitiesToSave)
+                }
+                entitiesToSave.size
             },
             onFailure = { throwable ->
                 val currentCache = localDS.getCachedHotels().first()

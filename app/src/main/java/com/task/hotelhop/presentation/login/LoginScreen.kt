@@ -171,6 +171,18 @@ fun LoginScreen(
                 onClick = { viewModel.onEvent(LoginUiEvent.GoogleSignInClicked) },
                 enabled = !uiState.isLoading
             )
+            Spacer(modifier = Modifier.height(12.dp))
+            TextButton(
+                onClick = { viewModel.onEvent(LoginUiEvent.ContinueAsGuestClicked) },
+                enabled = !uiState.isLoading,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.login_continue_guest),
+                    style = HotelHopTheme.typography.labelLarge,
+                    color = colors.primary
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
