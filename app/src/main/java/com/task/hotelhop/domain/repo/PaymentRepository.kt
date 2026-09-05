@@ -1,6 +1,6 @@
 package com.task.hotelhop.domain.repo
 
-import com.task.hotelhop.domain.entity.PaymobCheckoutSession
+import com.task.hotelhop.domain.entity.PaymentSession
 import com.task.hotelhop.domain.entity.User
 
 interface PaymentRepository {
@@ -9,5 +9,5 @@ interface PaymentRepository {
         hotelName: String,
         reference: String,
         user: User?
-    ): PaymobCheckoutSession
+    ): PaymentSession
 }
