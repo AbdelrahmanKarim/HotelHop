@@ -141,7 +141,7 @@ com.task.hotelhop
 ├── MainActivity.kt             # native splash + setContent
 ├── di/AppModule.kt
 ├── domain/
-│   ├── entity/                 # Hotel, User, PaymobCheckoutSession
+│   ├── entity/                 # Hotel, User, PaymentSession
 │   ├── exception/AppException.kt
 │   ├── repo/                   # HotelRepository, UserRepository, PaymentRepository
 │   └── usecase/{user,hotel,payment}/
